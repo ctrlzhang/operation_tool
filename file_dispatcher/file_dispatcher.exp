@@ -1,0 +1,44 @@
+#!/usr/bin/expect
+#dispatch files to remote server
+set timeout 600
+set src_user [lindex $argv 0]
+set src_password [lindex $argv 1] 
+set src_ip [lindex $argv 2]
+set dst_user [lindex $argv 3]
+set dst_password [lindex $argv 4] 
+set dst_ip [lindex $argv 5]
+set src_path [lindex $argv 6]
+set dst_path [lindex $argv 7]
+set filename [lindex $argv 8]
+
+send_user "\nprocess start\n"
+
+spawn scp $src_path/$filename $dst_user@$dst_ip:$dst_path
+expect {
+	"yes/no" { send "yes\r"; exp_continue}
+	"password" { send "$dst_password\r"; exp_continue }
+	"app" { send "exit\r" }
+}
+
+spawn ssh $dst_user@$dst_ip
+expect {
+	"yes/no" { send "yes\r"; exp_continue}
+	"password" { send "$dst_password\r" }
+	"app" {
+		set cmd "cd $dst_path"
+		send "$cmd\r"
+	}
+}
+
+expect {
+	"app" {
+		set cmd "sh $dst_path/$filename" 
+		send "$cmd\r"
+	}
+}
+
+expect {
+	"app" { send "exit\r" }
+}
+
+send_user "\nprocess success!\n"
