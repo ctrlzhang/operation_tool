@@ -5,3 +5,6 @@
 
 #### sql_executor
 * 方便在多个mysql实例上执行sql语句
+
+#### expect_login
+* 方便登录远程机器
